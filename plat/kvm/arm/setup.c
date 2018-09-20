@@ -18,12 +18,14 @@
  * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+#include <limits.h>
 #include <libfdt.h>
-#include <kvm/console.h>
+#include <uk/essentials.h>
 #include <uk/assert.h>
+#include <kvm/console.h>
 #include <kvm-arm/mm.h>
 #include <arm/cpu.h>
-#include <uk/arch/limits.h>
+#include <arm/gic-v2.h>
 
 void *_libkvmplat_pagetable;
 void *_libkvmplat_heap_start;
@@ -183,7 +185,12 @@ enocmdl:
 
 static void _libkvmplat_entry2(void *arg __attribute__((unused)))
 {
-       ukplat_entry_argp(NULL, (char *)cmdline, strlen(cmdline));
+	/* After switch to new stack, we start initializing other devices */
+
+	/* Initialize GIC interrupt controller */
+	_dtb_init_gic(_libkvmplat_dtb);
+
+	ukplat_entry_argp(NULL, (char *)cmdline, strlen(cmdline));
 }
 
 void _libkvmplat_start(void *dtb_pointer)
