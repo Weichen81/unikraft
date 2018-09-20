@@ -68,3 +68,35 @@ static inline unsigned long ukarch_ffsl(unsigned long word)
 
 	return 63 - clz;
 }
+
+/**
+ * ukarch_fls - find last (highest) set bit in word.
+ * @word: The word to search
+ *
+ * Undefined if no bit exists, so code should check against 0 first.
+ */
+unsigned int ukarch_fls(unsigned int word);
+
+/**
+ * ukarch_flsl - find last (highest) set bit in word.
+ * @word: The word to search
+ *
+ * Undefined if no bit exists, so code should check against 0 first.
+ */
+unsigned long ukarch_flsl(unsigned long word);
+
+/**
+ * ukarch_ffs - find first (lowest) set bit in word.
+ * @word: The word to search
+ *
+ * Undefined if no bit exists, so code should check against 0 first.
+ */
+unsigned long ukarch_ffs(unsigned int word);
+
+/**
+ * ukarch_ffsl - find first (lowest) set bit in word.
+ * @word: The word to search
+ *
+ * Undefined if no bit exists, so code should check against 0 first.
+ */
+unsigned long ukarch_ffsl(unsigned long word);
