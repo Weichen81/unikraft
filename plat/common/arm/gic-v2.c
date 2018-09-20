@@ -325,6 +325,30 @@ int gic_irq_translate(int type, int hw_irq)
         return -EINVAL;
 }
 
+void gic_handle_irq(void)
+{
+	uint32_t stat, irq;
+
+	do {
+		stat = gic_ack_irq();
+		irq = stat & GICC_IAR_INTID_MASK;
+
+		uk_printd(DLVL_CRIT, "Unikraft: EL1 IRQ#%d trap caught\n", irq);
+
+		/*
+		 * TODO: Hanle IPI&SGI interrupts here
+		 */
+		if (irq < GIC_MAX_IRQ) {
+			isb();
+			_ukplat_irq_handle((unsigned long)irq);
+			gic_eoi_irq(stat);
+			continue;
+		}
+
+		break;
+	} while (1);
+}
+
 static void gic_init_dist(void)
 {
 	uint32_t val, cpuif_number, irq_number;

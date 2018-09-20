@@ -362,6 +362,9 @@ int gic_is_irq_active(uint32_t irq);
 /* Config intrrupt trigger type and polarity */
 void gic_set_irq_type(uint32_t irq, int trigger, int polarity);
 
+/* Handle IRQ entry */
+void gic_handle_irq(void);
+
 /* Initialize GICv2 from device tree */
 int _dtb_init_gic(const void *fdt);
 
