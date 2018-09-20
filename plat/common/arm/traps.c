@@ -23,6 +23,7 @@
 #include <string.h>
 #include <uk/print.h>
 #include <uk/assert.h>
+#include <arm/gic-v2.h>
 
 static const char *exception_modes[]= {
 	"Synchronous Abort",
@@ -67,5 +68,31 @@ void trap_el1_sync(struct __regs *regs, uint64_t far)
 	uk_printd(DLVL_CRIT, "Unikraft: EL1 sync trap caught\n");
 
 	dump_registers(regs, far);
+	ukplat_crash();
+}
+
+void trap_el1_irq(struct __regs *regs, uint64_t far)
+{
+	uint32_t stat, irq;
+
+	do {
+		stat = gic_ack_irq();
+		irq = stat & GICC_IAR_INTID_MASK;
+
+		uk_printd(DLVL_CRIT, "Unikraft: EL1 IRQ#%d trap caught\n", irq);
+
+		/*
+		 * TODO: Hanle IPI&SGI interrupts here
+		 */
+		if (irq < GIC_MAX_IRQ) {
+			gic_eoi_irq(stat);
+			isb();
+			_ukplat_irq_handle((unsigned long)irq);
+			continue;
+		}
+
+		break;
+	} while (1);
+
 	ukplat_crash();
 }
