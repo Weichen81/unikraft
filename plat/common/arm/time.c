@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
  * Authors: Wei Chen <Wei.Chen@arm.com>
+ *          Jianyong Wu <Jianyong.Wu@arm.com>
  *
  * Copyright (c) 2018, Arm Ltd. All rights reserved.
  *
@@ -32,12 +33,14 @@
  * THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
  */
 #include <stdlib.h>
+#include <time.h>
 #include <libfdt.h>
 #include <uk/assert.h>
 #include <uk/plat/time.h>
 #include <uk/plat/irq.h>
 #include <uk/arch/atomic.h>
-#include <cpu.h>
+#include <arm/cpu.h>
+#include <arm/rtc.h>
 
 static uint64_t boot_ticks;
 static uint32_t counter_freq;
@@ -186,6 +189,20 @@ void time_block_until(__snsec until)
 		if (ukarch_test_and_clr_bit(0, &sched_have_pending_events))
 		break;
 	}
+}
+
+int gettimeofday(struct timeval *tv, void *tz)
+{
+	uint64_t nsec = ukplat_monotonic_clock();
+	tv->tv_sec = rtc_boot_seconds;
+	tv->tv_sec += ukarch_time_nsec_to_sec(nsec);
+	tv->tv_usec = ukarch_time_nsec_to_usec(ukarch_time_subsec(nsec));
+
+	if(tz != NULL) {
+		/* TODO: Timezone */
+	}
+
+	return 0;
 }
 
 /* return ns since time_init() */
