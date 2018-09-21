@@ -25,6 +25,7 @@
 #include <kvm/console.h>
 #include <kvm-arm/mm.h>
 #include <arm/cpu.h>
+#include <arm/rtc.h>
 #include <arm/gic-v2.h>
 
 void *_libkvmplat_pagetable;
@@ -189,6 +190,9 @@ static void _libkvmplat_entry2(void *arg __attribute__((unused)))
 
 	/* Initialize GIC interrupt controller */
 	_dtb_init_gic(_libkvmplat_dtb);
+
+	/* Initialize RTC */
+	_dtb_init_rtc(_libkvmplat_dtb);
 
 	ukplat_entry_argp(NULL, (char *)cmdline, strlen(cmdline));
 }
