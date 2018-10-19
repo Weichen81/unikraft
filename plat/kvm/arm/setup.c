@@ -81,8 +81,7 @@ static void _dtb_get_psci_method(void)
 	else if (!strcmp(fdtmethod, "smc"))
 		smcc_psci_call = smcc_psci_smc_call;
 	else {
-		uk_pr_info("Invalid PSCI conduit method: %s\n",
-			   fdtmethod);
+		uk_pr_info("Invalid PSCI conduit method: %s\n", fdtmethod);
 		goto enomethod;
 	}
 
@@ -109,7 +108,7 @@ static void _init_dtb_mem(void)
 						"device_type",
 						"memory", sizeof("memory"));
 	if (fdt_mem < 0) {
-		uk_pr_warn("No memory found in DTB\n");
+		uk_pr_warn(DLVL_WARN, "No memory found in DTB\n");
 		return;
 	}
 
@@ -171,7 +170,7 @@ static void _dtb_get_cmdline(char *cmdline, size_t maxlen)
 	cmdline[((unsigned int) len - 1) <= (maxlen - 1) ?
 		((unsigned int) len - 1) : (maxlen - 1)] = '\0';
 
-	uk_pr_info("Command line: %s\n", cmdline);
+	uk_pr_warn("Command line: %s\n", cmdline);
 	return;
 
 enocmdl:
@@ -208,7 +207,7 @@ void _libkvmplat_start(void *dtb_pointer)
 	 * Switch away from the bootstrap stack as early as possible.
 	 */
 	uk_pr_info("Switch from bootstrap stack to stack @%p\n",
-		   _libkvmplat_stack_top);
+				_libkvmplat_stack_top);
 
 	_libkvmplat_newstack((uint64_t) _libkvmplat_stack_top,
 				_libkvmplat_entry2, NULL);
