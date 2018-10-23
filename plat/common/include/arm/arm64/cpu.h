@@ -69,7 +69,7 @@ __IOREG_WRITE_ALL()
 #define SYSREG_READ(reg) \
 ({	uint64_t val; \
 	__asm__ __volatile__("mrs %0, " __STRINGIFY(reg) \
-			: "=&r" (val)); \
+			: "=r" (val)); \
 	val; \
 })
 
@@ -80,7 +80,7 @@ __IOREG_WRITE_ALL()
 #define SYSREG_READ32(reg) \
 ({	uint32_t val; \
 	__asm__ __volatile__("mrs %0, " __STRINGIFY(reg) \
-			: "=&r" (val)); \
+			: "=r" (val)); \
 	val; \
 })
 
