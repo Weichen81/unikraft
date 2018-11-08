@@ -152,7 +152,7 @@ char *strncpy(char *dst, const char *src, size_t len)
 
 char *strcpy(char *dst, const char *src)
 {
-	return strncpy(dst, src, SIZE_MAX);
+	return strncpy(dst, src, SSIZE_MAX);
 }
 
 int strncmp(const char *str1, const char *str2, size_t len)
