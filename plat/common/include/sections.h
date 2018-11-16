@@ -62,4 +62,36 @@ extern char __bss_start[];
 /* _end: end of kernel image */
 extern char _end[];
 
+
+/* The C spec states that comparing 2 pointers belonging to distinct object is undefined:
+ * https://wiki.sei.cmu.edu/confluence/display/c/ARR36-C.+Do+not+subtract+or+compare+two+pointers+that+do+not+refer+to+the+same+array
+ *
+ * In this case, we define following macro to access above symbols. This will
+ * help us to avoid subtracting or comparing these symbols as distinct pointers.
+ *
+ * This macro hide the original variable for a variable address, it will make
+ * GCC couldn't recognize varirable's original type, and do further assumptions
+ * for it.
+ */
+#define HIDE_VAR_FOR_GCC(var, ofs)	\
+({					\
+	unsigned long __var;		\
+	__var = (unsigned long) (var);	\
+	(typeof(var))(__var + (ofs));	\
+})
+
+#define __uk_image_symbol(addr)	HIDE_VAR_FOR_GCC((unsigned long)(addr), 0)
+
+#define __DTB		__uk_image_symbol(_dtb)
+#define __TEXT		__uk_image_symbol(_text)
+#define __ETEXT		__uk_image_symbol(_etext)
+#define __RODATA	__uk_image_symbol(_rodata)
+#define __ERODATA	__uk_image_symbol(_erodata)
+#define __DATA		__uk_image_symbol(_data)
+#define __EDATA		__uk_image_symbol(_edata)
+#define __CTORS		__uk_image_symbol(_ctors)
+#define __ECTORS	__uk_image_symbol(_ectors)
+#define __BSS_START	__uk_image_symbol(__bss_start)
+#define __END		__uk_image_symbol(_end)
+
 #endif /* __PLAT_CMN_SECTIONS_H__ */
