@@ -44,6 +44,14 @@
 #define __TRAP_STACK_SIZE	288
 #define __SP_OFFSET		272
 #define __SP_EL0_OFFSET		280
+
+/*
+ * In thread context switch, we will save the callee-saved registers
+ * (x19 ~ x28) and Frame Point Register (x29) to prev's thread stack:
+ * http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.den0024a/ch09s01s01.html
+ */
+#define __CALLEE_SAVED_SIZE	88
+
 #else
 /*
  * Change this structure must update TRAP_STACK_SIZE at the same time.
@@ -70,6 +78,22 @@ struct __regs {
 
 	/* Stack Pointer from el0 */
 	unsigned long sp_el0;
+};
+
+/*
+ * Change this structure must update __CALLEE_SAVED_SIZE at the
+ * same time.
+ */
+struct __callee_saved_regs {
+	/* Callee-saved registers, from x19 ~ x28 */
+	unsigned long callee[10];
+
+	/* Frame Point Register (x29) */
+	unsigned long fp;
+
+	/* Padding */
+	unsigned long pad;
+
 };
 
 /*
