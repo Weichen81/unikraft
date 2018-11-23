@@ -181,10 +181,6 @@ enocmdl:
 static void _libkvmplat_entry2(void *arg __attribute__((unused)))
 {
 	ukplat_entry_argp(NULL, (char *)cmdline, strlen(cmdline));
-	_dtb_init_gic();
-        ukplat_open_timer();
-        ukplat_set_timer_value(3000000);
-
 }
 
 void _libkvmplat_start(void *dtb_pointer)
@@ -202,6 +198,9 @@ void _libkvmplat_start(void *dtb_pointer)
 
 	/* Initialize memory from DTB */
 	_init_dtb_mem();
+
+	/* Initialize GIC from DTB */
+	_dtb_init_gic();
 
 	uk_pr_info("pagetable start: %p\n", _libkvmplat_pagetable);
 	uk_pr_info("     heap start: %p\n", _libkvmplat_heap_start);
