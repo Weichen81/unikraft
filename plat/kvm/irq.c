@@ -53,8 +53,8 @@ int ukplat_irq_register(unsigned long irq, irq_handler_func_t func, void *arg)
 	struct irq_handler *h;
 	unsigned long flags;
 
-	UK_ASSERT(irq < 16);
-	UK_ASSERT(allocator != NULL);
+//	UK_ASSERT(irq < 16);
+//	UK_ASSERT(allocator != NULL);
 
 	h = uk_malloc(allocator, sizeof(struct irq_handler));
 	if (!h)

@@ -181,6 +181,10 @@ enocmdl:
 static void _libkvmplat_entry2(void *arg __attribute__((unused)))
 {
 	ukplat_entry_argp(NULL, (char *)cmdline, strlen(cmdline));
+	_dtb_init_gic();
+        ukplat_open_timer();
+        ukplat_set_timer_value(3000000);
+
 }
 
 void _libkvmplat_start(void *dtb_pointer)
