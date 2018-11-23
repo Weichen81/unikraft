@@ -346,10 +346,11 @@ static void gic_init_cpuif(void)
         /*
 	 * Deactivate and disable all PPIs.
 	 */
-        for (i = 0; i < GICD_SGI_MAX_INITID; i += GICD_I_PER_ICACTIVERn) {
+        for (i = 0; i < GICD_SGI_MAX_INITID; i += GICD_I_PER_ICACTIVERn)
+	{
 		write_gicd32(GICD_ICACTIVER(i), GICD_DEF_ICACTIVERn);
-		write_gicd32(GICD_ICENABLER(i), GICD_DEF_PPI_ICENABLERn);
-							        }
+		write_gicd32(GICD_ISENABLER(i), GICD_DEF_PPI_ICENABLERn);
+	}
 	/* Deactivate and enable all SGIs */
 	for (i = 0; i < GIC_PPI_BASE; i += GICD_I_PER_ICACTIVERn)
 	{

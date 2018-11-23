@@ -199,6 +199,26 @@ __nsec ukplat_clock_wall(void)
 	return generic_timer_monotonic() + generic_timer_epochoffset();
 }
 
+/* open timer */
+void ukplat_open_timer(void)
+{
+        SYSREG_WRITE32(CNTV_CTL_EL0, 1);
+	uk_printk("CNTV_CTL_EL0 is %d\n",SYSREG_READ32(CNTV_CTL_EL0));
+}
+
+/* close timer */
+void ukplat_close_timer(void)
+{
+        SYSREG_WRITE32(CNTV_CTL_EL0, 0);
+}
+
+/* set timer value */
+void ukplat_set_timer_value(uint32_t value)
+{
+        SYSREG_WRITE32(CNTV_TVAL_EL0, value);
+	uk_printk("CNTV_TVAL_EL0 is %d\n",SYSREG_READ32(CNTV_TVAL_EL0));
+}
+
 static int timer_handler(void *arg __unused)
 {
 	/* Yes, we handled the irq. */
@@ -210,7 +230,7 @@ void ukplat_time_init(void)
 {
 	int rc;
 
-	rc = ukplat_irq_register(0, timer_handler, NULL);
+	rc = ukplat_irq_register(27, timer_handler, NULL);
 	if (rc < 0)
 		UK_CRASH("Failed to register timer interrupt handler\n");
 
