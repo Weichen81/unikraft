@@ -134,6 +134,10 @@ struct __callee_saved_regs {
 #define wmb()   dsb(st) /* Full system memory barrier store */
 #endif
 
+#ifndef nop
+#define nop()   __asm__ __volatile__ ("nop" : : : "memory")
+#endif
+
 static inline unsigned long ukarch_read_sp(void)
 {
 	unsigned long sp;
