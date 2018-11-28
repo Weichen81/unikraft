@@ -120,6 +120,7 @@ struct __callee_saved_regs {
  */
 #define dmb(opt)    __asm__ __volatile("dmb " #opt ::: "memory")
 #define dsb(opt)    __asm__ __volatile("dsb " #opt ::: "memory")
+#define nop()    __asm__ __volatile("nop " ::: "memory")
 
 /* We probably only need "dmb" here, but we'll start by being paranoid. */
 #ifndef mb

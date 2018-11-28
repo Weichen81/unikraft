@@ -39,6 +39,10 @@
 #include <uk/bitops.h>
 #include <cpu.h>
 
+#define SYSCOUNTER_MIN_DELTA (1000)
+#define TIMER_PPI_MASK (1 << 1)
+#define TIMER_PPI_UNMASK (0xfffffffd)
+
 static uint64_t boot_ticks;
 static uint32_t counter_freq;
 extern void *_libkvmplat_dtb;
@@ -172,19 +176,65 @@ static int generic_timer_init(void)
 	return 0;
 }
 
+void ukplat_set_cval(uint64_t ticks)
+{
+       SYSREG_WRITE64(CNTV_CVAL_EL0, ticks);
+}
+
+void ukplat_set_tval(uint32_t ticks)
+{
+       SYSREG_WRITE32(CNTV_TVAL_EL0, ticks);
+}
+
+void ukplat_open_counter(void)
+{
+       SYSREG_WRITE32(CNTV_CTL_EL0, 1);
+}
+
+void ukplat_close_counter(void)
+{
+       SYSREG_WRITE32(CNTV_CTL_EL0, 0);
+}
+
+static void ukplat_cpu_block(uint64_t until)
+{
+        uint64_t now, delta_ns;
+        uint64_t delta_ticks;
+        uint64_t ticks;
+
+        UK_ASSERT(ukplat_lcpu_irqs_disabled());
+
+        now = ukplat_monotonic_clock();
+
+        /*
+         * Compute delta in system counter ticks. Return if it is less than minimum safe
+         * amount of ticks.  Essentially this will cause us to spin until
+         * the timeout.
+         */
+        delta_ns = until - now;
+        delta_ticks = delta_ns / ticks_to_ns(1);
+        if (delta_ticks < SYSCOUNTER_MIN_DELTA) {
+                /*
+                 * Since we are "spinning", quickly enable interrupts in
+                 * the hopes that we might get new work and can do something
+                 * else than spin.
+                 */
+                ukplat_lcpu_enable_irq();
+                nop();
+                ukplat_lcpu_disable_irq();
+                return;
+        }
+        ticks = delta_ticks + read_virtual_count();
+        ukplat_set_cval(ticks);
+        ukplat_timer_unmask();
+        ukplat_lcpu_halt_irq();
+}
+
 unsigned long sched_have_pending_events;
 
 void time_block_until(__snsec until)
 {
-	while ((__snsec) ukplat_monotonic_clock() < until) {
-		/*
-		 * TODO:
-		 * As we haven't support interrupt on Arm, so we just
-		 * use busy polling for now.
-		 */
-		if (__uk_test_and_clear_bit(0, &sched_have_pending_events))
-			break;
-	}
+        ukplat_cpu_block(until);
 }
 
 /* return ns since time_init() */
@@ -212,17 +262,31 @@ void ukplat_close_timer(void)
         SYSREG_WRITE32(CNTV_CTL_EL0, 0);
 }
 
-/* set timer value */
-void ukplat_set_timer_value(uint32_t value)
+/* mask timer interrupt */
+void ukplat_timer_mask(void)
 {
-        SYSREG_WRITE32(CNTV_TVAL_EL0, value);
-	uk_printk("CNTV_TVAL_EL0 is %d\n",SYSREG_READ32(CNTV_TVAL_EL0));
+        uint32_t val;
+
+        val = SYSREG_READ32(CNTV_TVAL_EL0);
+        val |= TIMER_PPI_MASK;
+        SYSREG_WRITE32(CNTV_TVAL_EL0, val);
+}
+
+/* unmask timer interrupt */
+void ukplat_timer_unmask(void)
+{
+        uint32_t val;
+
+        val = SYSREG_READ32(CNTV_TVAL_EL0);
+        val &= TIMER_PPI_UNMASK;
+        SYSREG_WRITE32(CNTV_TVAL_EL0, val);
 }
 
 static int timer_handler(void *arg __unused)
 {
-	/* Yes, we handled the irq. */
-	return 1;
+        /* Yes, we handled the irq. */
+        ukplat_timer_mask();
+        return 1;
 }
 
 /* must be called before interrupts are enabled */
