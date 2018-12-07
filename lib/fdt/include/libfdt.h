@@ -769,6 +769,27 @@ const char *fdt_get_alias(const void *fdt, const char *name);
 int fdt_get_path(const void *fdt, int nodeoffset, char *buf, int buflen);
 
 /**
+ * fdt_getprop_u32_by_offset - retrieve u32 of a given property
+ * @fdt: pointer to the device tree blob
+ * @nodeoffset: offset of the node whose property to find
+ * @name: name of the property to find
+ * @out: pointer to u32 variable (will be overwritten) or NULL
+ *
+ * fdt_getprop_u32_by_offset() retrieves u32 to the value of the property
+ * named 'name' of the node at offset nodeoffset (this will be a
+ * pointer to within the device blob itself, not a copy of the value).
+ * If out is non-NULL, the u32 of the property value is returned.
+ *
+ * returns:
+ *	0, on success
+ *		out contains the u32 of a given property at nodeoffset.
+ *	-FDT_ERR_NOTFOUND, node does not have named property
+ *	-FDT_ERR_BADNCELLS,
+ */
+int fdt_getprop_u32_by_offset(const void *fdt, int nodeoffset,
+		const char *name, uint32_t *out);
+
+/**
  * fdt_supernode_atdepth_offset - find a specific ancestor of a node
  * @fdt: pointer to the device tree blob
  * @nodeoffset: offset of the node whose parent to find
@@ -1060,6 +1081,27 @@ const char *fdt_stringlist_get(const void *fdt, int nodeoffset,
  * values aren't used.
  */
 #define FDT_MAX_NCELLS		4
+
+/**
+ * fdt_get_cells - retrieve cell size for a bus represented in the tree
+ * @fdt: pointer to the device tree blob
+ * @prop: cell name of the property containing the string list
+ * @nodeoffset: offset of the node to find the address size for
+ *
+ * When the node has a valid #address-cells property, returns its value.
+ *
+ * returns:
+ *	0 <= n < FDT_MAX_NCELLS, on success
+ *      2, if the node has no #address-cells property
+ *      -FDT_ERR_BADNCELLS, if the node has a badly formatted or invalid
+ *		#address-cells property
+ *	-FDT_ERR_BADMAGIC,
+ *	-FDT_ERR_BADVERSION,
+ *	-FDT_ERR_BADSTATE,
+ *	-FDT_ERR_BADSTRUCTURE,
+ *	-FDT_ERR_TRUNCATED, standard meanings
+ */
+int fdt_get_cells(const void *fdt, const char *prop, int nodeoffset);
 
 /**
  * fdt_address_cells - retrieve address size for a bus represented in the tree

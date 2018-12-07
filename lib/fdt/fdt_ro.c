@@ -438,6 +438,46 @@ int fdt_get_path(const void *fdt, int nodeoffset, char *buf, int buflen)
 	return offset; /* error from fdt_next_node() */
 }
 
+int fdt_getprop_u32_by_offset(const void *fdt, int offset,
+		const char *name, uint32_t *out)
+{
+	const fdt32_t *prop;
+	int prop_len;
+
+	prop = fdt_getprop(fdt, offset, name, &prop_len);
+	if (!prop)
+		return prop_len;
+
+	if (prop_len >= sizeof(fdt32_t)) {
+		*out = fdt32_to_cpu(prop[0]);
+		return 0;
+	}
+
+	return FDT_ERR_NOTFOUND;
+}
+
+int fdt_get_cells(const void *fdt, const char *prop, int nodeoffset)
+{
+	int val;
+
+	do {
+		/* Find the interrupt-parent phandle */
+		if (!fdt_getprop_u32_by_offset(fdt, nodeoffset,
+				prop, (uint32_t *)&val))
+			break;
+		/* Try to find in parent node */
+		nodeoffset = fdt_parent_offset(fdt, nodeoffset);
+	} while (nodeoffset >= 0);
+
+	if (nodeoffset < 0)
+		return nodeoffset;
+
+	if ((val <= 0) || (val > FDT_MAX_NCELLS))
+		return -FDT_ERR_BADNCELLS;
+
+	return val;
+}
+
 int fdt_supernode_atdepth_offset(const void *fdt, int nodeoffset,
 				 int supernodedepth, int *nodedepth)
 {
