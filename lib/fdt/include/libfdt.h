@@ -769,6 +769,27 @@ const char *fdt_get_alias(const void *fdt, const char *name);
 int fdt_get_path(const void *fdt, int nodeoffset, char *buf, int buflen);
 
 /**
+ * fdt_getprop_u32_by_offset - retrieve u32 of a given property
+ * @fdt: pointer to the device tree blob
+ * @nodeoffset: offset of the node whose property to find
+ * @name: name of the property to find
+ * @out: pointer to u32 variable (will be overwritten) or NULL
+ *
+ * fdt_getprop_u32_by_offset() retrieves u32 to the value of the property
+ * named 'name' of the node at offset nodeoffset (this will be a
+ * pointer to within the device blob itself, not a copy of the value).
+ * If out is non-NULL, the u32 of the property value is returned.
+ *
+ * returns:
+ *	0, on success
+ *		out contains the u32 of a given property at nodeoffset.
+ *	-FDT_ERR_NOTFOUND, node does not have named property
+ *	-FDT_ERR_BADNCELLS,
+ */
+int fdt_getprop_u32_by_offset(const void *fdt, int nodeoffset,
+		const char *name, uint32_t *out);
+
+/**
  * fdt_supernode_atdepth_offset - find a specific ancestor of a node
  * @fdt: pointer to the device tree blob
  * @nodeoffset: offset of the node whose parent to find
