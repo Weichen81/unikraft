@@ -1083,6 +1083,26 @@ const char *fdt_stringlist_get(const void *fdt, int nodeoffset,
 #define FDT_MAX_NCELLS		4
 
 /**
+ * fdt_get_cells - retrieve cell size for a bus represented in the tree
+ * @fdt: pointer to the device tree blob
+ * @prop: cell name of the property containing the string list
+ * @nodeoffset: offset of the node to find the address size for
+ *
+ * When the node has a valid #address-cells property, returns its value.
+ *
+ * returns:
+ *	0 <= n < FDT_MAX_NCELLS, on success
+ *      -FDT_ERR_BADNCELLS, if the node has a badly formatted or invalid
+ *		#address-cells property
+ *	-FDT_ERR_BADMAGIC,
+ *	-FDT_ERR_BADVERSION,
+ *	-FDT_ERR_BADSTATE,
+ *	-FDT_ERR_BADSTRUCTURE,
+ *	-FDT_ERR_TRUNCATED, standard meanings
+ */
+int fdt_get_cells(const void *fdt, const char *prop, int nodeoffset);
+
+/**
  * fdt_address_cells - retrieve address size for a bus represented in the tree
  * @fdt: pointer to the device tree blob
  * @nodeoffset: offset of the node to find the address size for
