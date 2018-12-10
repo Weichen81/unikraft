@@ -1161,6 +1161,24 @@ int fdt_size_cells(const void *fdt, int nodeoffset);
  */
 int fdt_interrupt_cells(const void *fdt, int nodeoffset);
 
+/**
+ * fdt_get_address - retrieve device address of a given index
+ * @fdt: pointer to the device tree blob
+ * @nodeoffset: offset of the node to find the address for.
+ * @index: index of region
+ * @addr: return the region address
+ * @size: return the region size
+ *
+ * returns:
+ *	0, on success
+ *      -FDT_ERR_BADNCELLS, if the node has a badly formatted or invalid
+ *		address property
+ *      -FDT_ERR_NOTFOUND, if the node doesn't have address property
+ *      -FDT_ERR_NOSPACE, if the node doesn't have address for index
+ */
+int fdt_get_address(const void *fdt, int nodeoffset, int index,
+			uint64_t *addr, uint64_t *size);
+
 /**********************************************************************/
 /* Write-in-place functions                                           */
 /**********************************************************************/
