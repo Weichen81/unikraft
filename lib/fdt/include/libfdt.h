@@ -1141,6 +1141,25 @@ int fdt_address_cells(const void *fdt, int nodeoffset);
  */
 int fdt_size_cells(const void *fdt, int nodeoffset);
 
+/**
+ * fdt_interrupt_cells - retrieve the number of cells needed to encode an
+ *                       interrupt source
+ * @fdt: pointer to the device tree blob
+ * @nodeoffset: offset of the node to find the interrupt for.
+ *
+ * When the node has a valid #interrupt-cells property, returns its value.
+ *
+ * returns:
+ *	0 <= n < FDT_MAX_NCELLS, on success
+ *      -FDT_ERR_BADNCELLS, if the node has a badly formatted or invalid
+ *		#interrupt-cells property
+ *	-FDT_ERR_BADMAGIC,
+ *	-FDT_ERR_BADVERSION,
+ *	-FDT_ERR_BADSTATE,
+ *	-FDT_ERR_BADSTRUCTURE,
+ *	-FDT_ERR_TRUNCATED, standard meanings
+ */
+int fdt_interrupt_cells(const void *fdt, int nodeoffset);
 
 /**********************************************************************/
 /* Write-in-place functions                                           */
