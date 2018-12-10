@@ -7,6 +7,7 @@ LIBFDT_CFLAGS-y += -Wno-sign-compare
 
 LIBFDT_SRCS-y += $(LIBFDT_BASE)/fdt.c
 LIBFDT_SRCS-y += $(LIBFDT_BASE)/fdt_addresses.c
+LIBFDT_SRCS-y += $(LIBFDT_BASE)/fdt_interrupts.c
 LIBFDT_SRCS-y += $(LIBFDT_BASE)/fdt_empty_tree.c
 LIBFDT_SRCS-y += $(LIBFDT_BASE)/fdt_overlay.c
 LIBFDT_SRCS-y += $(LIBFDT_BASE)/fdt_ro.c
