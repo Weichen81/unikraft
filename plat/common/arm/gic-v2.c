@@ -368,12 +368,12 @@ int _dtb_init_gic(void)
 
 	uk_pr_info("Probing GICv2...\n");
 	/* Currently, we only support 1 GIC per system */
-	fdt_gic = uk_dtb_find_device(gic_device_list, sizeof(gic_device_list));
+	fdt_gic = fdt_lookup_device(gic_device_list, sizeof(gic_device_list));
 
 
 	/* Get device address and size at regs region */
-	gic_dist_addr = (void *)uk_dtb_read_reg(fdt_gic, 0, &gic_dist_size);
-	gic_cpuif_addr = (void *)uk_dtb_read_reg(fdt_gic, 1, &gic_cpuif_size);
+	gic_dist_addr = (void *)fdt_read_reg(fdt_gic, 0, &gic_dist_size);
+	gic_cpuif_addr = (void *)fdt_read_reg(fdt_gic, 1, &gic_cpuif_size);
 
 	uk_pr_info("Found GICv2 on:\n");
 	uk_pr_info("\tCPU interface address: %p\n", gic_cpuif_addr);
