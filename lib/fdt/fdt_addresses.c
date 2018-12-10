@@ -52,8 +52,9 @@
 
 #include <fdt.h>
 #include <libfdt.h>
-
 #include "libfdt_internal.h"
+
+void *_libkvmplat_dtb;
 
 int fdt_address_cells(const void *fdt, int nodeoffset)
 {
@@ -63,4 +64,83 @@ int fdt_address_cells(const void *fdt, int nodeoffset)
 int fdt_size_cells(const void *fdt, int nodeoffset)
 {
 	return fdt_get_cells(fdt, "#size-cells", nodeoffset);
+}
+
+/*
+ * uk_dtb_find_device find device offset in dtb by
+ * searching device list
+ */
+int fdt_lookup_device(const char *device_list[],
+        uint32_t size)
+{
+        uint32_t idx;
+        int device = -1;
+
+        for (idx = 0;
+                idx < size / sizeof(device_list[0]);
+                idx++) {
+                device = fdt_node_offset_by_compatible(_libkvmplat_dtb, -1,
+                device_list[idx]);
+                if (device >= 0)
+                break;
+        }
+
+        return device;
+}
+
+/* this reads a number from a given dtb cell address */
+uint64_t fdt_read_number(fdt32_t *regs, uint32_t size)
+{
+        uint64_t number = 0;
+        if (size >= 3 || size <= 0)
+		return FDT_ERR_BADOFFSET;
+
+        for(uint32_t i = 0; i < size; i++)
+        {
+                number <<= 32;
+                number |= fdt32_to_cpu(*regs);
+                regs++;
+        }
+
+        return number;
+}
+
+/*
+ * uk_dtb_read_reg read specified device address and
+ * size in reg region from dtb
+ */
+uint64_t fdt_read_reg(int device, uint32_t index,
+        uint64_t *size)
+{
+        int  prop_len, prop_min_len;
+        uint32_t naddr, nsize, term_size;
+        uint64_t addr;
+        fdt32_t *regs;
+
+        if (device == -1)
+		return FDT_ERR_BADOFFSET;
+
+        naddr = fdt_address_cells(_libkvmplat_dtb, device);
+        if (naddr >= FDT_MAX_NCELLS)
+		return FDT_ERR_INTERNAL;
+
+        nsize = fdt_size_cells(_libkvmplat_dtb, device);
+        if (nsize >= FDT_MAX_NCELLS)
+		return FDT_ERR_INTERNAL;
+
+        regs = fdt_getprop(_libkvmplat_dtb, device, "reg", &prop_len);
+        prop_min_len = (int)sizeof(fdt32_t) * (naddr + nsize);
+        if (regs == NULL || prop_len < prop_min_len)
+		return FDT_ERR_NOTFOUND;
+
+        term_size = nsize + naddr;
+        index = index * term_size;
+        if(sizeof(fdt32_t) * (index + 1) > prop_len)
+                return FDT_ERR_BADOFFSET;
+
+        addr = fdt_read_number(regs + index, naddr);
+
+        *size = fdt_read_number(regs + index + naddr, nsize);
+
+        return addr;
 }

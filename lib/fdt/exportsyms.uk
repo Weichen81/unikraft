@@ -61,3 +61,6 @@ fdt_stringlist_contains
 fdt_resize
 fdt_overlay_apply
 fdt_interrupt_cells
+fdt_lookup_device
+fdt_read_number
+fdt_read_reg
