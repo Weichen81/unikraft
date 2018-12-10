@@ -1111,7 +1111,6 @@ int fdt_get_cells(const void *fdt, const char *prop, int nodeoffset);
  *
  * returns:
  *	0 <= n < FDT_MAX_NCELLS, on success
- *      2, if the node has no #address-cells property
  *      -FDT_ERR_BADNCELLS, if the node has a badly formatted or invalid
  *		#address-cells property
  *	-FDT_ERR_BADMAGIC,
@@ -1132,7 +1131,6 @@ int fdt_address_cells(const void *fdt, int nodeoffset);
  *
  * returns:
  *	0 <= n < FDT_MAX_NCELLS, on success
- *      2, if the node has no #address-cells property
  *      -FDT_ERR_BADNCELLS, if the node has a badly formatted or invalid
  *		#size-cells property
  *	-FDT_ERR_BADMAGIC,
