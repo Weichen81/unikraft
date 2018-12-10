@@ -64,3 +64,53 @@ int fdt_size_cells(const void *fdt, int nodeoffset)
 {
 	return fdt_get_cells(fdt, "#size-cells", nodeoffset);
 }
+
+static uint64_t fdt_reg_read_number(const fdt32_t *regs, uint32_t size)
+{
+	uint64_t number = 0;
+
+	if (size >= 3 || size <= 0)
+		return FDT_ERR_BADNCELLS;
+
+	for(uint32_t i = 0; i < size; i++) {
+		number <<= 32;
+		number |= fdt32_to_cpu(*regs);
+		regs++;
+	}
+
+	return number;
+}
+
+int fdt_get_address(const void *fdt, int nodeoffset, int index,
+			uint64_t *addr, uint64_t *size)
+{
+	int len, prop_addr, prop_size;
+	int naddr, nsize, term_size;
+	const void *regs;
+
+	naddr = fdt_address_cells(fdt, nodeoffset);
+	if (naddr < 0 || naddr >= FDT_MAX_NCELLS)
+		return FDT_ERR_BADNCELLS;
+
+	nsize = fdt_size_cells(fdt, nodeoffset);
+	if (nsize < 0 || nsize >= FDT_MAX_NCELLS)
+		return FDT_ERR_BADNCELLS;
+
+	/* Get reg content */
+	regs = fdt_getprop(fdt, nodeoffset, "reg", &len);
+	if (regs == NULL)
+		return FDT_ERR_NOTFOUND;
+
+	term_size = (int)sizeof(fdt32_t) * (nsize + naddr);
+	prop_addr = term_size * index;
+	prop_size = prop_addr + (int)sizeof(fdt32_t) * naddr;
+
+	/* The reg content must cover the reg term[index] at least */
+	if (len < (prop_addr + term_size))
+		return FDT_ERR_NOSPACE;
+
+	*addr = fdt_reg_read_number(regs + prop_addr, naddr);
+	*size = fdt_reg_read_number(regs + prop_size, nsize);
+
+	return 0;
+}
