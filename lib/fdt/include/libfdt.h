@@ -992,6 +992,33 @@ int fdt_node_offset_by_compatible(const void *fdt, int startoffset,
 				  const char *compatible);
 
 /**
+ * fdt_node_offset_by_compatible_list - find nodes with a given
+ *                                     'compatible' list value
+ * @fdt: pointer to the device tree blob
+ * @startoffset: only find nodes after this offset
+ * @compatibles: a list of 'compatible' string to match against
+ * @size: compatible list size
+ *
+ * fdt_node_offset_by_compatible_list() returns the offset of the
+ * first matched node after startoffset, which has a 'compatible'
+ * property which lists the given compatible string; or if
+ * startoffset is -1, the very first such node in the tree.
+ *
+ * returns:
+ *	structure block offset of the located node (>= 0, >startoffset),
+ *		 on success
+ *	-FDT_ERR_NOTFOUND, no node matching the criterion exists in the
+ *		tree after startoffset
+ *	-FDT_ERR_BADOFFSET, nodeoffset does not refer to a BEGIN_NODE tag
+ *	-FDT_ERR_BADMAGIC,
+ *	-FDT_ERR_BADVERSION,
+ *	-FDT_ERR_BADSTATE,
+ *	-FDT_ERR_BADSTRUCTURE, standard meanings
+ */
+int fdt_node_offset_by_compatible_list(const void *fdt, int startoffset,
+				  const char *compatibles[], int size);
+
+/**
  * fdt_stringlist_contains - check a string list property for a string
  * @strlist: Property containing a list of strings to check
  * @listlen: Length of property

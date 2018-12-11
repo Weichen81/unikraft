@@ -741,3 +741,18 @@ int fdt_node_offset_by_compatible(const void *fdt, int startoffset,
 
 	return offset; /* error from fdt_next_node() */
 }
+
+int fdt_node_offset_by_compatible_list(const void *fdt, int startoffset,
+				  const char *compatibles[], int size)
+{
+	int idx, offset;
+
+	for (idx = 0; idx < size; idx++) {
+		offset = fdt_node_offset_by_compatible(fdt, startoffset,
+				  compatibles[idx]);
+		if (offset >= 0)
+			return offset;
+	}
+
+	return FDT_ERR_NOTFOUND;
+}
