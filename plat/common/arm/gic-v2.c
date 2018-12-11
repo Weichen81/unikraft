@@ -46,11 +46,17 @@
 /* Max CPU interface for GICv2 */
 #define GIC_MAX_CPUIF		8
 
-/* SPI interrupt base ID */
+/* SPI interrupt definitions */
+#define GIC_SPI_TYPE		0
 #define GIC_SPI_BASE		32
 
-/* PPI interrupt base ID */
+/* PPI interrupt definitions */
+#define GIC_PPI_TYPE		1
 #define GIC_PPI_BASE		16
+
+/* SGI interrupt definitions */
+#define GIC_SGI_TYPE		2
+#define GIC_SGI_BASE		0
 
 /* Max support interrupt number for GICv2 */
 #define GIC_MAX_IRQ		__MAX_IRQ
@@ -292,6 +298,33 @@ void gic_set_irq_type(uint32_t irq, int trigger, int polarity)
 	write_gicd32(GICD_ICFGR(irq), val);
 }
 
+int gic_irq_translate(int type, int hw_irq)
+{
+	int irq;
+
+        switch (type) {
+	case GIC_SPI_TYPE:
+		irq = hw_irq + GIC_SPI_BASE;
+		if (irq >= GIC_SPI_BASE && irq < GIC_SPI_BASE)
+			return irq;
+		break;
+	case GIC_PPI_TYPE:
+		irq = hw_irq + GIC_PPI_BASE;
+		if (irq >= GIC_PPI_BASE && irq < GIC_SPI_BASE)
+			return irq;
+		break;
+	case GIC_SGI_TYPE:
+		irq = hw_irq + GIC_SGI_BASE;
+		if (irq >= GIC_SGI_BASE && irq < GIC_PPI_BASE)
+			return irq;
+		break;
+	default:
+		uk_pr_warn("Invalid IRQ type [%d]\n", type);
+        }
+
+        return -EINVAL;
+}
+
 static void gic_init_dist(void)
 {
 	uint32_t val, cpuif_number, irq_number;
@@ -412,4 +445,19 @@ int _dtb_init_gic(const void *fdt)
 	gic_init_cpuif();
 
 	return 0;
+}
+
+int ukplat_get_irq_from_dtb(const void *fdt, int nodeoffset, int index)
+{
+	const fdt32_t *prop;
+	int type, hwirq, size;
+
+	prop = fdt_get_interrupt(fdt, nodeoffset, index, &size);
+	if (!prop)
+		return -EINVAL;
+
+	type = fdt32_to_cpu(prop[0]);
+	hwirq = fdt32_to_cpu(prop[1]);
+
+	return gic_irq_translate(type , hwirq);
 }

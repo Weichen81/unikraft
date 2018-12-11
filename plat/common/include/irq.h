@@ -61,4 +61,13 @@ enum uk_irq_polarity {
 	UK_IRQ_POLARITY_MAX
 };
 
+/**
+ * Get an interrupt number of given index from device tree
+ * @param fdt Device tree blob
+ * @param nodeoffset device node offset
+ * @param index which interrupt
+ * @return 0 on success, a negative errno value on errors
+ */
+int ukplat_get_irq_from_dtb(const void *fdt, int nodeoffset, int index);
+
 #endif /* __PLAT_CMN_IRQ_H__ */
