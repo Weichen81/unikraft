@@ -213,6 +213,64 @@ int fdt_next_subnode(const void *fdt, int offset);
 	     node >= 0;					\
 	     node = fdt_next_subnode(fdt, node))
 
+/**
+ * fdt_for_each_compatible_node - iterate over all compatible nodes
+ *
+ * @node:	node (int, lvalue)
+ * @fdt:	FDT blob (const void *)
+ * @compatible:	a 'compatible' string to match against
+ *
+ * This is actually a wrapper around a for loop and would be used like so:
+ *
+ *	fdt_for_each_compatible_node(node, fdt, compatible) {
+ *		Use node
+ *		...
+ *	}
+ *
+ *	if ((node < 0) && (node != -FDT_ERR_NOT_FOUND)) {
+ *		Error handling
+ *	}
+ *
+ * Note that this is implemented as a macro and @node is used as
+ * iterator in the loop. The parent variable be constant or even a
+ * literal.
+ *
+ */
+#define fdt_for_each_compatible_node(node, fdt, compatible)		\
+	for (node = fdt_node_offset_by_compatible(fdt, -1, compatible); \
+	     node >= 0;							\
+	     node = fdt_node_offset_by_compatible(fdt, node, compatible))
+
+/**
+ * fdt_for_each_matching_node - iterate over all match nodes
+ *
+ * @node:	node (int, lvalue)
+ * @fdt:	FDT blob (const void *)
+ * @compatible:	a list of 'compatible' strings to match against
+ *
+ * This is actually a wrapper around a for loop and would be used like so:
+ *
+ *	fdt_for_each_matching_node(node, fdt, compatible_list, size) {
+ *		Use node
+ *		...
+ *	}
+ *
+ *	if ((node < 0) && (node != -FDT_ERR_NOT_FOUND)) {
+ *		Error handling
+ *	}
+ *
+ * Note that this is implemented as a macro and @node is used as
+ * iterator in the loop. The parent variable be constant or even a
+ * literal.
+ *
+ */
+#define fdt_for_each_matching_node(node, fdt, compatibles, size)	\
+	for (node = fdt_node_offset_by_compatible_list(fdt, -1,		\
+						compatibles, size);	\
+	     node >= 0;							\
+	     node = fdt_node_offset_by_compatible_list(fdt, node,	\
+						compatibles, size))
+
 /**********************************************************************/
 /* General functions                                                  */
 /**********************************************************************/
