@@ -31,24 +31,35 @@
  *
  * THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
  */
+#include <uk/assert.h>
+#include <kvm/kernel.h>
 #include <kvm/intctrl.h>
+#include <arm/cpu.h>
+#include <arm/irq.h>
+#include <arm/gic-v2.h>
 
 void intctrl_init(void)
 {
-	// TO DO
+	int ret;
+
+	/* Initialize GIC from DTB */
+	ret = _dtb_init_gic(_libkvmplat_dtb);
+	if (ret)
+		UK_CRASH("Initialize GIC from DTB failed, ret=%d\n", ret);
+
 }
 
-void intctrl_ack_irq(unsigned int irq)
+void intctrl_ack_irq(uint32_t irq)
 {
-	// TO DO
+	gic_eoi_irq(irq);
 }
 
-void intctrl_mask_irq(unsigned int irq)
+void intctrl_mask_irq(uint32_t irq)
 {
-	// TO DO
+	gic_disable_irq(irq);
 }
 
-void intctrl_clear_irq(unsigned int irq)
+void intctrl_clear_irq(uint32_t irq)
 {
-	// TO DO
+	gic_enable_irq(irq);
 }
