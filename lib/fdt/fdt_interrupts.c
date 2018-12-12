@@ -87,3 +87,26 @@ int fdt_interrupt_cells(const void *fdt, int offset)
 
 	return fdt_get_cells(fdt, "#interrupt-cells", intc_offset);
 }
+
+const void *fdt_get_interrupt(const void *fdt, int nodeoffset,
+			int index, int *size)
+{
+	int nintr, len, term_size;
+	const void *regs;
+
+	nintr = fdt_interrupt_cells(fdt, nodeoffset);
+	if (nintr < 0 || nintr >= FDT_MAX_NCELLS)
+		return NULL;
+
+	/*
+	 * Interrupt content must cover the index specific irq infomation.
+	 */
+	regs = fdt_getprop(fdt, nodeoffset, "interrupts", &len);
+	term_size = (int)sizeof(fdt32_t) * nintr;
+	if (regs == NULL || len < term_size * (index + 1))
+		return NULL;
+
+	*size = nintr;
+
+	return regs + term_size * index;
+}

@@ -1178,6 +1178,18 @@ int fdt_interrupt_cells(const void *fdt, int nodeoffset);
  */
 int fdt_get_address(const void *fdt, int nodeoffset, int index,
 			uint64_t *addr, uint64_t *size);
+/**
+ * fdt_get_interrupt - retrieve device interrupt of a given index
+ * @fdt: pointer to the device tree blob
+ * @nodeoffset: offset of the node to find the address for
+ * @index: the index of interrupt we want to retrive
+ * @size: interrupt cell size in fdt32_t
+ *
+ * returns:
+ *      NULL on failed, non-NULL on success
+ */
+const void *fdt_get_interrupt(const void *fdt, int nodeoffset,
+			int index, int *size);
 
 /**********************************************************************/
 /* Write-in-place functions                                           */
