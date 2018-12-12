@@ -63,3 +63,4 @@ fdt_overlay_apply
 fdt_getprop_u32_by_offset
 fdt_interrupt_cells
 fdt_get_address
+fdt_get_interrupt
