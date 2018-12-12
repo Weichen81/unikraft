@@ -38,10 +38,10 @@
 #include <uk/plat/irq.h>
 #include <uk/bitops.h>
 #include <cpu.h>
+#include <kvm/kernel.h>
 
 static uint64_t boot_ticks;
 static uint32_t counter_freq;
-extern void *_libkvmplat_dtb;
 
 /*
  * Shift factor for counter scaling multiplier; referred to as S in the

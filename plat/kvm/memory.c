@@ -23,13 +23,7 @@
 #include <sys/types.h>
 #include <uk/plat/memory.h>
 #include <uk/assert.h>
-
-/*
- * Provided by setup.c
- */
-extern void *_libkvmplat_heap_start;
-extern void *_libkvmplat_stack_top;
-extern void *_libkvmplat_mem_end;
+#include <kvm/kernel.h>
 
 int ukplat_memregion_count(void)
 {

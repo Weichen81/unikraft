@@ -22,6 +22,7 @@
 #include <uk/plat/console.h>
 #include <uk/assert.h>
 #include <arm/cpu.h>
+#include <kvm/kernel.h>
 
 /* PL011 UART registers and masks*/
 /* Data register */
@@ -82,8 +83,6 @@ static uint64_t pl011_uart_bas = 0;
 #define PL011_REG(r)		((uint16_t *)(pl011_uart_bas + (r)))
 #define PL011_REG_READ(r)	ioreg_read16(PL011_REG(r))
 #define PL011_REG_WRITE(r, v)	ioreg_write16(PL011_REG(r), v)
-
-extern void *_libkvmplat_dtb;
 
 static void init_pl011(uint64_t bas)
 {
