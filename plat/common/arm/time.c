@@ -43,21 +43,81 @@
 static uint64_t boot_ticks;
 static uint32_t counter_freq;
 
-/*
- * Shift factor for counter scaling multiplier; referred to as S in the
- * following comments.
- */
-static uint8_t counter_shift;
 
-/* Multiplier for converting counter ticks to nsecs. (0.S) fixed point. */
+/* Shift factor for converting ticks to ns */
+static uint8_t counter_shift_to_ns;
+
+/* Shift factor for converting ns to ticks */
+static uint8_t counter_shift_to_tick;
+
+/* Multiplier for converting counter ticks to nsecs */
 static uint32_t ns_per_tick;
+
+/* Multiplier for converting nsecs to counter ticks */
+static uint32_t tick_per_ns;
+
+/*
+ * The maximum time range in seconds which can be converted by multiplier
+ * and shift factors. This will guarantee the converted value not to exceed
+ * 64-bit unsigned integer. Increase the time range will reduce the accuracy
+ * of conversion, because we will get smaller multiplier and shift factors.
+ * In this case, we selected 3600s as the time range.
+ */
+#define __MAX_CONVERT_SECS	3600UL
 
 /* How many nanoseconds per second */
 #define NSEC_PER_SEC ukarch_time_sec_to_nsec(1)
 
 static inline uint64_t ticks_to_ns(uint64_t ticks)
 {
-	return (ns_per_tick * ticks) >> counter_shift;
+	return (ns_per_tick * ticks) >> counter_shift_to_ns;
+}
+
+static inline uint64_t ns_to_ticks(uint64_t ns)
+{
+	return (tick_per_ns * ns) >> counter_shift_to_tick;
+}
+
+/*
+ * Calculate multiplier/shift factors for scaled math.
+ */
+static void calculate_mult_shift(uint32_t *pmult, uint8_t *pshift,
+		uint64_t source, uint64_t target)
+{
+	uint64_t tmp;
+	uint32_t mult;
+	uint8_t shift = 32;
+
+	/*
+	 * Get the maximum shift factor (max_shift) for the given
+	 * conversion range.
+	 */
+	tmp = (__MAX_CONVERT_SECS * (uint64_t)source) >> shift;
+	while (tmp) {
+		tmp >>=1;
+		shift--;
+	}
+
+	/*
+	 * Calculate shift factor (S) and scaling multiplier (M).
+	 *
+	 * (S) needs to be the largest shift factor (<= max_shift) where
+	 * the result of the M calculation below fits into uint32_t
+	 * without truncation.
+	 *
+	 * multiplier = (target << shift) / source
+	 */
+	mult = 0;
+	do {
+		tmp = ((uint64_t)target << shift) / source;
+		if ((tmp & 0xFFFFFFFF00000000L) == 0L)
+			mult = (uint32_t)tmp;
+		else
+			shift--;
+	} while (shift > 0 && mult == 0L);
+
+	*pmult = mult;
+	*pshift = shift;
 }
 
 /*
@@ -140,28 +200,27 @@ static __u64  generic_timer_epochoffset(void)
 
 static int generic_timer_init(void)
 {
-	/*
-	 * Calculate counter shift factor and scaling multiplier.
-	 *
-	 * counter_shift (S) needs to be the largest (<=32) shift factor where
-	 * the result of the ns_per_tick calculation below fits into uint32_t
-	 * without truncation. Note that we disallow an S of zero to ensure
-	 * the loop always terminates.
-	 *
-	 * (0.S) ns_per_tick = NSEC_PER_SEC (S.S) / counter_freq (S.0)
-	 */
-	uint64_t tmp;
-
 	counter_freq = get_counter_frequency();
-	counter_shift = 32;
-	do {
-		tmp = (NSEC_PER_SEC << counter_shift) / counter_freq;
-		if ((tmp & 0xFFFFFFFF00000000L) == 0L)
-			ns_per_tick = (uint32_t)tmp;
-		else
-			counter_shift--;
-	} while (counter_shift > 0 && ns_per_tick == 0L);
+
+	/*
+	 * Calculate the shift factor and scaling multiplier for
+	 * cpnverting ticks to ns.
+	 */
+	calculate_mult_shift(&ns_per_tick, &counter_shift_to_ns,
+				counter_freq, NSEC_PER_SEC);
+
+	/* We disallow zero ns_per_tick */
 	UK_BUGON(!ns_per_tick);
+
+	/*
+	 * Calculate the shift factor and scaling multiplier for
+	 * cpnverting ns to ticks.
+	 */
+	calculate_mult_shift(&tick_per_ns, &counter_shift_to_tick,
+				NSEC_PER_SEC, counter_freq);
+
+	/* We disallow zero ns_per_tick */
+	UK_BUGON(!tick_per_ns);
 
 	/*
 	 * Monotonic time begins at boot_ticks (first read of counter
