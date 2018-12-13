@@ -35,10 +35,16 @@
 #include <libfdt.h>
 #include <uk/assert.h>
 #include <uk/plat/time.h>
-#include <uk/plat/irq.h>
+#include <uk/plat/lcpu.h>
 #include <uk/bitops.h>
 #include <cpu.h>
+#include <irq.h>
 #include <kvm/kernel.h>
+
+/* Bits definition of cntv_ctl_el0 register */
+#define GT_TIMER_ENABLE		0x01
+#define GT_TIMER_MASK_IRQ	0x02
+#define GT_TIMER_IRQ_STATUS	0x04
 
 static const char *arch_timer_list[] = {
 	"arm,armv8-timer",
@@ -123,6 +129,28 @@ static void calculate_mult_shift(uint32_t *pmult, uint8_t *pshift,
 
 	*pmult = mult;
 	*pshift = shift;
+}
+
+static inline void generic_timer_enable(void)
+{
+	SYSREG_WRITE32(cntv_ctl_el0, GT_TIMER_ENABLE);
+}
+
+static inline void generic_timer_mask_irq(void)
+{
+	SYSREG_WRITE32(cntv_ctl_el0,
+		SYSREG_READ32(cntv_ctl_el0) | GT_TIMER_MASK_IRQ);
+}
+
+static inline void generic_timer_unmask_irq(void)
+{
+	SYSREG_WRITE32(cntv_ctl_el0,
+		SYSREG_READ32(cntv_ctl_el0) & (~GT_TIMER_MASK_IRQ));
+}
+
+static inline void generic_timer_update_compare(uint64_t new_val)
+{
+	SYSREG_WRITE64(cntv_cval_el0, new_val);
 }
 
 static uint32_t generic_timer_get_frequency(int fdt_timer)
@@ -219,6 +247,18 @@ static int generic_timer_init(int fdt_timer)
 	return 0;
 }
 
+static int generic_timer_irq_handler(void *arg __unused)
+{
+	/*
+	 * We just mask the IRQ here, the scheduler will call
+	 * generic_timer_cpu_block, and then unmask the IRQ.
+	 */
+	generic_timer_mask_irq();
+
+	/* Yes, we handled the irq. */
+	return 1;
+}
+
 unsigned long sched_have_pending_events;
 
 void time_block_until(__snsec until)
@@ -246,16 +286,10 @@ __nsec ukplat_clock_wall(void)
 	return generic_timer_monotonic() + generic_timer_epochoffset();
 }
 
-static int timer_handler(void *arg __unused)
-{
-	/* Yes, we handled the irq. */
-	return 1;
-}
-
 /* must be called before interrupts are enabled */
 void ukplat_time_init(void)
 {
-	int rc, fdt_timer;
+	int rc, irq, fdt_timer;
 
 	/*
 	 * Monotonic time begins at boot_ticks (first read of counter
@@ -269,11 +303,24 @@ void ukplat_time_init(void)
 	if (fdt_timer < 0)
 		UK_CRASH("Could not find arch timer!\n");
 
-	rc = ukplat_irq_register(0, timer_handler, NULL);
-	if (rc < 0)
-		UK_CRASH("Failed to register timer interrupt handler\n");
-
 	rc = generic_timer_init(fdt_timer);
 	if (rc < 0)
 		UK_CRASH("Failed to initialize platform time\n");
+
+	irq = ukplat_get_irq_from_dtb(_libkvmplat_dtb, fdt_timer, 2);
+	if (irq < 0)
+		UK_CRASH("Failed to find IRQ number from DTB\n");
+
+	rc = ukplat_irq_register(irq, generic_timer_irq_handler, NULL);
+	if (rc < 0)
+		UK_CRASH("Failed to register timer interrupt handler\n");
+
+	/*
+	 * Mask IRQ before scheduler start working. Otherwise we will get
+	 * unexpected timer interrupts when system is booting.
+	 */
+	generic_timer_mask_irq();
+
+	/* Enable timer */
+	generic_timer_enable();
 }
