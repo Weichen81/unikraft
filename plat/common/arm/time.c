@@ -76,6 +76,11 @@ static uint32_t tick_per_ns;
  */
 #define __MAX_CONVERT_SECS	3600UL
 
+/*
+ * Minimum delta to sleep using generic timer.
+ */
+static uint32_t counter_mini_delta;
+
 /* How many nanoseconds per second */
 #define NSEC_PER_SEC ukarch_time_sec_to_nsec(1)
 
@@ -219,6 +224,67 @@ static uint64_t generic_timer_epochoffset(void)
 	return 0;
 }
 
+/*
+ * Returns early if any interrupts are serviced, or if the requested delay is
+ * too short. Must be called with interrupts disabled, will enable interrupts
+ * "atomically" during idle loop.
+ *
+ * This function must be called only from the scheduler. It will screw
+ * your system if you do otherwise. And, there is no reason you
+ * actually want to use it anywhere else. THIS IS NOT A YIELD or any
+ * kind of mutex_lock. It will simply halt the cpu, not allowing any
+ * other thread to execute.
+ */
+static void generic_timer_cpu_block(uint64_t until_ns)
+{
+	uint64_t now_ns, delta_ns;
+	uint64_t now_ticks, delta_ticks;
+
+	UK_ASSERT(ukplat_lcpu_irqs_disabled());
+
+	/* Record current ticks */
+	now_ticks = generic_timer_get_ticks();
+	now_ns = ticks_to_ns(now_ticks - boot_ticks);
+
+	/*
+	 * Compute delta in counter ticks. Return if it is less than minimum
+	 * safe amount of ticks. Essentially this will cause us to spin until
+	 * the timeout.
+	 */
+	delta_ns = until_ns - now_ns;
+	delta_ticks = ns_to_ticks(delta_ns);
+	if (delta_ticks < counter_mini_delta) {
+		/*
+		 * Since we are "spinning", quickly enable interrupts in
+		 * the hopes that we might get new work and can do something
+		 * else than spin.
+		 */
+		ukplat_lcpu_enable_irq();
+		nop();
+		ukplat_lcpu_disable_irq();
+
+		return;
+	}
+
+	/* Calculate the next match ticks for compare counter */
+	generic_timer_update_compare(now_ticks + delta_ticks);
+
+	/* Unmask the IRQ for next match interrupt */
+	generic_timer_unmask_irq();
+
+	/*
+	 * Wait for any interrupt. If we got an interrupt then just
+	 * return into the scheduler (this func is called _ONLY_ from
+	 * a scheduler, see the note above) which will check if there
+	 * is work to do and call us again here if not.
+	 *
+	 * TODO: It would be more efficient for longer sleeps to be
+	 * able to distinguish if the interrupt was the timer interrupt
+	 * and no other, but this will do for now.
+	 */
+	ukplat_lcpu_halt_irq();
+}
+
 static int generic_timer_init(int fdt_timer)
 {
 	/* Get counter frequency from DTB or register */
@@ -244,6 +310,12 @@ static int generic_timer_init(int fdt_timer)
 	/* We disallow zero ns_per_tick */
 	UK_BUGON(!tick_per_ns);
 
+	/*
+	 * Set minimal counter delta, programming seems to have an overhead
+	 * of 3-4us, but play it safe here.
+	 */
+	counter_mini_delta = ns_to_ticks(4000);
+
 	return 0;
 }
 
@@ -264,11 +336,7 @@ unsigned long sched_have_pending_events;
 void time_block_until(__snsec until)
 {
 	while ((__snsec) ukplat_monotonic_clock() < until) {
-		/*
-		 * TODO:
-		 * As we haven't support interrupt on Arm, so we just
-		 * use busy polling for now.
-		 */
+		generic_timer_cpu_block(until);
 		if (__uk_test_and_clear_bit(0, &sched_have_pending_events))
 			break;
 	}
