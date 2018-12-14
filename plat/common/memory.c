@@ -37,7 +37,7 @@
 
 static struct uk_alloc *plat_allocator;
 
-int ukplat_memallocator_set(struct uk_alloc *a)
+/*int ukplat_memallocator_set(struct uk_alloc *a)
 {
 	UK_ASSERT(a != NULL);
 
@@ -50,7 +50,7 @@ int ukplat_memallocator_set(struct uk_alloc *a)
 
 	return 0;
 }
-
+*/
 struct uk_alloc *ukplat_memallocator_get(void)
 {
 	return plat_allocator;

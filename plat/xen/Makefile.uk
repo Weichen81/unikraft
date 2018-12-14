@@ -32,7 +32,6 @@ LIBXENPLAT_SRCS-y              += $(UK_PLAT_COMMON_BASE)/lcpu.c|common
 LIBXENPLAT_SRCS-y              += $(UK_PLAT_COMMON_BASE)/memory.c|common
 
 ifneq (,$(filter x86_32 x86_64,$(CONFIG_UK_ARCH)))
-LIBXENPLAT_SRCS-$(CONFIG_ARCH_X86_64) += $(UK_PLAT_COMMON_BASE)/x86/trace.c|common
 LIBXENPLAT_SRCS-$(CONFIG_ARCH_X86_64) += $(UK_PLAT_COMMON_BASE)/x86/traps.c|common
 ifeq ($(CONFIG_HAVE_SCHED),y)
 LIBXENPLAT_SRCS-$(CONFIG_ARCH_X86_64) += $(UK_PLAT_COMMON_BASE)/x86/thread_start.S|common
@@ -61,12 +60,17 @@ ifneq (,$(filter arm arm_64,$(CONFIG_UK_ARCH)))
 LIBXENPLAT_SRCS-y              += $(LIBXENPLAT_BASE)/arm/setup.c
 LIBXENPLAT_SRCS-y              += $(LIBXENPLAT_BASE)/arm/traps.c
 LIBXENPLAT_SRCS-$(CONFIG_ARCH_ARM_32) += $(LIBXENPLAT_BASE)/arm/entry32.S
+LIBXENPLAT_SRCS-$(CONFIG_ARCH_ARM_32) += $(UK_PLAT_COMMON_BASE)/arm/cpu_native.c|common
+LIBXENPLAT_SRCS-$(CONFIG_ARCH_ARM_32) += $(UK_PLAT_COMMON_BASE)/arm/time32.c|common
+LIBKVMPLAT_SRCS-y += $(UK_PLAT_COMMON_BASE)/arm/cpu_native.c|common
 LIBXENPLAT_SRCS-$(ARCH_ARM_64) += $(LIBXENPLAT_BASE)/arm/entry64.S
 LIBXENPLAT_SRCS-y              += $(LIBXENPLAT_BASE)/arm/arch_events.c
 LIBXENPLAT_SRCS-y              += $(LIBXENPLAT_BASE)/arm/arch_time.c
 LIBXENPLAT_SRCS-$(CONFIG_ARCH_ARM_32) += $(LIBXENPLAT_BASE)/arm/hypercalls32.S
 LIBXENPLAT_SRCS-$(ARCH_ARM_64) += $(LIBXENPLAT_BASE)/arm/hypercalls64.S
 endif
+LIBKVMPLAT_SRCS-$(CONFIG_ARCH_ARM_32) += $(UK_PLAT_COMMON_BASE)/arm/cpu_native.c|common
+
 
 LIBXENPLAT_SRCS-y              += $(LIBXENPLAT_BASE)/lcpu.c
 LIBXENPLAT_SRCS-y              += $(LIBXENPLAT_BASE)/console.c

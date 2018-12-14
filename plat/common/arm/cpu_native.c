@@ -36,6 +36,11 @@
 #include <uk/assert.h>
 #include <arm/cpu_defs.h>
 
+#define PSCI_FNID_SYSTEM_RESET              0x84000009
+#define PSCI_FNID_SYSTEM_OFF                0x84000008
+
+typedef int (*smcc_psci_callfn_t)(uint32_t, uint64_t, uint64_t, uint64_t);
+smcc_psci_callfn_t smcc_psci_call;
 /*
  * Halts the CPU until the next external interrupt is fired. For Arm,
  * we can use WFI to implement this feature.

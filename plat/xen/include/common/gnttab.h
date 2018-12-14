@@ -43,6 +43,6 @@ int gnttab_end_access(grant_ref_t gref);
 
 const char *gnttabop_error(__s16 status);
 
-grant_entry_v1_t *gnttab_arch_init(int nr_grant_frames);
+//grant_entry_v1_t *gnttab_arch_init(int nr_grant_frames);
 
 #endif /* !__GNTTAB_H__ */

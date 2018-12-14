@@ -37,8 +37,11 @@
 
 #if defined(__ARM_64__)
 #include <arm/arm64/cpu.h>
+#if defined(__ARM_32__)
+#include <arm/cpu.h>
 #else
 #error "Add cpu.h for current architecture."
+#endif
 #endif
 
 #endif /* __PLAT_CMN_ARM_CPU_H__ */

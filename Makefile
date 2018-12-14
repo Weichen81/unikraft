@@ -258,7 +258,7 @@ ifndef HOSTNM
 HOSTNM := nm
 endif
 ifndef HOSTOBJCOPY
-HOSTOBJCOPY := objcopy
+HOSTOBJCOPY := arm-linux-gnueabihf-objcopy
 endif
 ifndef HOSTRANLIB
 HOSTRANLIB := ranlib

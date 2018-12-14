@@ -38,7 +38,7 @@ extern int _boot_stack_end[];
 extern uint32_t _libxenplat_paddr_offset;
 
 #define L1_PAGETABLE_SHIFT      12
-
+#define PAGE_SIZE 64
 #define L1_PROT          0
 
 #define to_phys(x)  (((uintptr_t)(x)+_libxenplat_paddr_offset) & 0xffffffff)

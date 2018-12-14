@@ -57,6 +57,15 @@ struct uk_thread {
 #endif
 };
 
+static inline unsigned long ukarch_read_sp(void)
+{
+        unsigned long sp;
+
+        __asm__ __volatile("mov %0, sp": "=&r"(sp));
+
+        return sp;
+}
+
 UK_TAILQ_HEAD(uk_thread_list, struct uk_thread);
 
 #define uk_thread_create(name, function, data) \

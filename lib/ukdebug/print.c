@@ -60,6 +60,15 @@
 #define DLVL_CONS (-1)
 
 #if !CONFIG_LIBUKDEBUG_REDIR_PRINTK
+/*unsigned long ukarch_read_sp(void)
+{
+        unsigned long sp;
+
+        __asm__ __volatile("mov %0, sp": "=&r"(sp));
+
+        return sp;
+}
+*/
 static inline void _vprintk(const char *fmt, va_list ap)
 {
 	char lbuf[BUFLEN];

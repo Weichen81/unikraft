@@ -61,6 +61,7 @@
 #include <uk/bus.h>
 #endif /* CONFIG_LIBUKBUS */
 
+static struct uk_alloc *plat_allocator0;
 int main(int argc, char *argv[]) __weak;
 #ifdef CONFIG_LIBLWIP
 extern int liblwip_init(void);
@@ -72,6 +73,20 @@ struct thread_main_arg {
 	int argc;
 	char **argv;
 };
+
+static int ukplat_memallocator_set(struct uk_alloc *a)
+{
+        UK_ASSERT(a != NULL);
+
+        if (plat_allocator0 != NULL)
+                return -1;
+
+        plat_allocator0 = a;
+
+        _ukplat_mem_mappings_init();
+
+        return 0;
+}
 
 static void main_thread_func(void *arg)
 {

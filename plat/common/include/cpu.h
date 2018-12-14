@@ -40,15 +40,17 @@
 #include <x86/cpu.h>
 #elif defined(__ARM_64__)
 #include <arm/cpu.h>
+#elif defined(__ARM_32__)
+#include <arm/cpu.h>
 #else
 #error "Add cpu.h for current architecture."
 #endif
 
 #define __CPU_HALT()		\
 ({				\
-	local_irq_disable();	\
 		for (;;)	\
 			halt();	\
 })
 
+//	local_irq_disable();	
 #endif /* __PLAT_CMN_CPU_H__ */

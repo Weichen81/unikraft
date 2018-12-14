@@ -37,6 +37,8 @@
 
 #if defined(__ARM_64__)
 #include "arm64/cpu_defs.h"
+#elif defined(__ARM_32__)
+#include "cpu_defs.h"
 #else
 #error "Add cpu_defs.h for current architecture."
 #endif

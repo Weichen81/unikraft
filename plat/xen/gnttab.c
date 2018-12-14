@@ -25,9 +25,7 @@
 #include <uk/plat/lcpu.h>
 #include <uk/semaphore.h>
 #include <common/gnttab.h>
-#include <xen-x86/mm.h>
-
-
+#include <xen-arm/mm.h>
 /* NR_GRANT_FRAMES must be less than or equal to that configured in Xen */
 #define NR_GRANT_FRAMES         4
 #define NR_GRANT_ENTRIES \
@@ -213,9 +211,9 @@ void gnttab_init(void)
 	for (gref = GNTTAB_NR_RESERVED_ENTRIES; gref < NR_GRANT_ENTRIES; gref++)
 		put_free_entry(gref);
 
-	gnttab.table = gnttab_arch_init(NR_GRANT_FRAMES);
+//	gnttab.table = gnttab_arch_init(NR_GRANT_FRAMES);
 	if (gnttab.table == NULL)
-		UK_CRASH("Failed to initialize grant table\n");
+//		UK_CRASH("Failed to initialize grant table\n");
 
 	uk_pr_info("Grant table mapped at %p.\n", gnttab.table);
 

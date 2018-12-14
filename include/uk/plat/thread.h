@@ -80,7 +80,7 @@ void *ukplat_thread_ctx_create(struct ukplat_ctx_callbacks *cbs,
 	return cbs->create_cb(allocator, sp);
 }
 
-void ukplat_thread_ctx_destroy(struct uk_alloc *allocator, void *ctx);
+//void ukplat_thread_ctx_destroy(struct uk_alloc *allocator, void *ctx);
 
 static inline
 void ukplat_thread_ctx_start(struct ukplat_ctx_callbacks *cbs,

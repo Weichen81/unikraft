@@ -35,7 +35,15 @@
 #include <uk/thread.h>
 #include <uk/print.h>
 #include <uk/assert.h>
+#include <uk/alloc.h>
 
+void ukplat_thread_ctx_destroy(struct uk_alloc *allocator, void *ctx)
+{
+        UK_ASSERT(allocator != NULL);
+        UK_ASSERT(ctx != NULL);
+
+        uk_free(allocator, ctx);
+}
 
 /* Pushes the specified value onto the stack of the specified thread */
 static void stack_push(unsigned long *sp, unsigned long value)

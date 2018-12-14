@@ -84,13 +84,13 @@ int ukplat_memregion_get(int i, struct ukplat_memregion_desc *mrd);
  * @param a Memory allocator
  * @return 0 on success, < 0 otherwise
  */
-int ukplat_memallocator_set(struct uk_alloc *a);
+static int ukplat_memallocator_set(struct uk_alloc *a);
 
 /**
  * Returns the platform memory allocator
  * @return Platform memory allocator address
  */
-struct uk_alloc *ukplat_memallocator_get(void);
+static struct uk_alloc *ukplat_memallocator_get(void);
 
 #ifdef __cplusplus
 }

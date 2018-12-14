@@ -38,6 +38,7 @@
 #include <sw_ctx.h>
 #include <uk/assert.h>
 
+/*
 void ukplat_thread_ctx_destroy(struct uk_alloc *allocator, void *ctx)
 {
 	UK_ASSERT(allocator != NULL);
@@ -45,7 +46,7 @@ void ukplat_thread_ctx_destroy(struct uk_alloc *allocator, void *ctx)
 
 	uk_free(allocator, ctx);
 }
-
+*/
 int ukplat_ctx_callbacks_init(struct ukplat_ctx_callbacks *ctx_cbs,
 		enum ukplat_ctx_type ctx_type)
 {

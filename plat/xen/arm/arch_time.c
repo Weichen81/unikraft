@@ -49,6 +49,7 @@ static uint32_t counter_freq;
  */
 typedef int64_t s_time_t;
 
+
 #define SECONDS(_s)   (((s_time_t)(_s))  * 1000000000UL)
 
 /* Compute with 96 bit intermediate result: (a*b)/c */
@@ -93,11 +94,11 @@ static inline uint64_t read_virtual_count(void)
  *        Note: This function is required to return accurate
  *        time even in the absence of multiple timer ticks.
  */
-__nsec ukplat_monotonic_clock(void)
+/*__nsec ukplat_monotonic_clock(void)
 {
 	return (__nsec) ticks_to_ns(read_virtual_count() - cntvct_at_init);
 }
-
+*/
 /* Set the timer and mask. */
 void write_timer_ctl(uint32_t value)
 {
@@ -140,7 +141,7 @@ void block_domain(__snsec until)
 	}
 }
 
-void ukplat_time_init(void)
+/*void ukplat_time_init(void)
 {
 	uk_pr_info("Initialising timer interface\n");
 
@@ -149,7 +150,7 @@ void ukplat_time_init(void)
 	uk_pr_debug("Virtual Count register is %llx, freq = %d Hz\n",
 		    cntvct_at_init, counter_freq);
 }
-
+*/
 void ukplat_time_fini(void)
 {
 }
